@@ -6,7 +6,7 @@ import forex.services.rates.CustomDecoder.rateListDecoder
 import forex.services.rates.errors.Error.{OneFrameClientException, OneFrameConnectException, OneFrameServerException, OneFrameUnknownException}
 import sttp.capabilities
 import sttp.client3.circe.asJson
-import sttp.client3.{HttpClientFutureBackend, Identity, RequestT, Response, ResponseException, SttpBackend, UriContext, basicRequest}
+import sttp.client3.{Identity, RequestT, Response, ResponseException, SttpBackend, UriContext, basicRequest}
 import sttp.model.Uri
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,10 +17,6 @@ class OneFrameApi(
     sttpBackendClient: SttpBackend[Future, capabilities.WebSockets],
     token: String
 ) {
-
-  def sttpBackendClient(): SttpBackend[Future, capabilities.WebSockets] = {
-    HttpClientFutureBackend()
-  }
 
   def getAllRates(pairs: Seq[Rate.Pair]): Future[List[Rate]] = {
     val params: Seq[(String, String)] = pairs.map(

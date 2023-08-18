@@ -1,28 +1,40 @@
-/*package forex.services.rates.interpreters
+package forex.services.rates.interpreters
 
-import cats.effect.{Async, ContextShift, Timer}
-import cats.implicits.toFlatMapOps
 import forex.domain.{Currency, Rate}
-import fs2.Stream
-import scalacache.Cache
+import forex.services.rates.errors.Error
+import zio.stream.ZStream
+import zio.{Runtime, Schedule, Unsafe, ZIO, ZIOAppDefault}
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class RatesStreamService[F[_]: Async: ContextShift: Timer](oneFrame: OneFrameApi, cache: RatesCache, refreshRate: FiniteDuration){
+class RatesStreamService(api: OneFrameApi, cache: RatesCache, refreshRate: Long){
   private val allPairs: List[Rate.Pair] = Currency.allPairs.map(Rate.Pair.tupled)
 
-  def getRates: F[Cache[Rate]] = cache.getAll()
+  object ratesStream extends ZIOAppDefault {
+    def run: ZIO[Any, Throwable, Unit] = {
+      val stream: ZIO[Any, Nothing, Unit] =
+        ZStream
+          .fromSchedule(Schedule.spaced(zio.Duration.fromMillis(refreshRate)))
+          .map { _ =>
+            api.getAllRates(allPairs)
+              .flatMap {
+                rates: List[Rate] =>
+                  cache.putAll(rates)
+              }
+              .recoverWith {
+                case exception: Error => Future.failed(exception)
+              }
+          }
+          .runDrain
 
-  def cacheUpdater(): Stream[F, Unit] = {
-    def updateCache(): F[Unit] = {
-      oneFrame
-        .getAllPairs(allPairs)
-        .flatMap[List[Rate]] {
-          case Right(value: List[Rate]) => Async[F].pure(value)
-          case Left(exception: Exception) => Async[F].raiseError(exception)
+      Unsafe.unsafe {
+        implicit unsafe => {
+          Runtime.default.unsafe.fork(stream)
         }
-        .flatMap(rates => cache.putAll(rates))
+      }
+
+      ZIO.from(())
     }
-    Stream.eval(updateCache()) >> Stream.awakeEvery[F](refreshRate) >> Stream.eval(updateCache())
   }
-}*/
+}

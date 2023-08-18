@@ -32,10 +32,6 @@ object Dependencies {
     lazy val sttp                = "com.softwaremill.sttp.client3" %% "zio"                % Versions.sttp
     lazy val sttpCirce           = "com.softwaremill.sttp.client3" %% "circe"              % Versions.sttpCirce
 
-    lazy val json4s              = "com.softwaremill.sttp.client3" %% "json4s"             % "3.9.0"
-    lazy val json4sNative        = "org.json4s"                    %% "json4s-native"      % "4.0.6"
-    lazy val playJson            = "com.softwaremill.sttp.client3" %% "play-json"          % "3.9.0"
-
     lazy val enumeratum          = "com.beachape"                 %% "enumeratum"          % Versions.enumeratum
     lazy val enumeratumCirce     = "com.beachape"                 %% "enumeratum-circe"    % Versions.enumeratum
 

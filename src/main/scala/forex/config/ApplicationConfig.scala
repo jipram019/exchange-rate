@@ -16,7 +16,7 @@ case class HttpConfig(
 case class OneFrameConfig(
      http: HttpConfig,
      token: String,
-     ratesRefresh: FiniteDuration,
+     expiration: Long,
+     refreshRate: Long,
      cacheSize: Long,
-     ttl: Long
 )
