@@ -43,6 +43,7 @@ object Dependencies {
     lazy val circeCore           = circe("circe-core")
     lazy val circeGeneric        = circe("circe-generic")
     lazy val circeGenericExt     = circe("circe-generic-extras")
+    lazy val circeLiteral        = circe("circe-literal")
     lazy val circeParser         = circe("circe-parser")
     lazy val pureConfig          = "com.github.pureconfig" %% "pureconfig"                 % Versions.pureConfig
 

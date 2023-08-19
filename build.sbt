@@ -61,6 +61,7 @@ libraryDependencies ++= Seq(
   Libraries.circeGeneric,
   Libraries.circeGenericExt,
   Libraries.circeParser,
+  Libraries.circeLiteral,
   Libraries.pureConfig,
   Libraries.sttp,
   Libraries.sttpCirce,
