@@ -12,22 +12,21 @@ class RatesStreamService(api: OneFrameApi, cache: RatesCache, refreshRate: Long)
 
   object ratesStream extends ZIOAppDefault {
     def run: ZIO[Any, Throwable, Unit] = {
-      val stream: ZIO[Any, Nothing, Unit] =
+      val apiCall: Future[Unit] = api.getAllRates(allPairs)
+        .flatMap {
+          rates: List[Rate] =>
+            cache.putAll(rates)
+        }
+        .recoverWith {
+          case exception =>
+            Future.failed(exception)
+        }
+
+      val stream: ZIO[Any, Throwable, Unit] =
         ZStream
-          .fromSchedule(Schedule.spaced(zio.Duration.fromMillis(refreshRate)))
-          .map { _ =>
-            api.getAllRates(allPairs)
-              .flatMap {
-                rates: List[Rate] =>
-                  cache.putAll(rates).map{
-                    _ => Future.unit
-                  }
-              }
-              .recoverWith {
-                case exception =>
-                  Future.failed(exception)
-              }
-          }
+          .from(apiCall)
+          .schedule(Schedule.spaced(zio.Duration.fromMillis(refreshRate)))
+          .map { _ => apiCall}
           .run(ZSink.drain)
 
       Unsafe.unsafe {

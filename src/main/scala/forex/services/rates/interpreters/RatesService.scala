@@ -21,14 +21,11 @@ class RatesService[F[_]](cache: RatesCache, expiration: Long) extends Algebra[F]
     Async.fromFuture(
       Async[T].delay(
         cache.getRate(request)
-          .recoverWith {
-            case exception: Error => Future.failed(exception)
-          }
           .flatMap {
             case Some(rate) =>
-              if(isExpired(rate.timestamp.value)) Future.failed(LookupFailed("Rates are expired!"))
+              if(isExpired(rate.timestamp.value)) Future.successful(Left(LookupFailed("Rate is expired!")))
               else Future.successful(Right(rate))
-            case None => Future.failed(LookupFailed("Rates cannot be fetched"))
+            case None => Future.successful(Left(LookupFailed("Rate is missing!")))
         }
       )
     )
