@@ -33,6 +33,23 @@ class RatesService[F[_]](cache: RatesCache, expiration: Long) extends Algebra[F]
       )
     )
   }
+
+  override def getRateFuture(request: Rate.Pair): Future[Rate] = {
+    cache.getRate(request)
+      .recoverWith {
+        case exception: Error => Future.failed(exception)
+      }
+      .flatMap {
+        case Some(rate) =>
+          if(isExpired(rate.timestamp.value)) {
+            Future.failed(LookupFailed("Rate is expired!"))
+          }
+          else {
+            Future.successful(rate)
+          }
+        case None => Future.failed(LookupFailed("Rate is missing!"))
+      }
+  }
 }
 
 object RatesService {
