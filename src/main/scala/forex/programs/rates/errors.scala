@@ -17,7 +17,7 @@ object errors {
   def toProgramError(error: RatesServiceError): Error = error match {
     case RatesServiceError.LookupFailed(msg) => Error.RateLookupFailed(msg)
     case RatesServiceError.OneFrameServerException(msg) => Error.RateServerException(msg)
-    case RatesServiceError.OneFrameClientException(msg) => Error.RateClientException(msg)
+    case RatesServiceError.OneFrameBadRequestException(msg) => Error.RateClientException(msg)
     case RatesServiceError.OneFrameUnknownException(msg) => Error.RateUnknownException(msg)
     case RatesServiceError.OneFrameConnectException(msg) => Error.RateApiConnectException(msg)
     case RatesServiceError.ApiTimeoutException => Error.TimeoutException()

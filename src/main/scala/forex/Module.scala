@@ -12,7 +12,7 @@ import org.http4s.server.middleware.{AutoSlash, Timeout}
 import sttp.client3.HttpClientFutureBackend
 
 class Module[F[_]: Concurrent: Timer: ContextShift](config: ApplicationConfig) {
-  private val oneFrameClient: OneFrameApi = OneFrameApi(config.oneFrame, HttpClientFutureBackend(), config.oneFrame.token)
+  private val oneFrameClient: OneFrameApi = OneFrameApi(config.oneFrame, HttpClientFutureBackend())
   private val ratesCache: RatesCache = RatesCache(config.oneFrame.expiration, config.oneFrame.cacheSize)
   val ratesStreamService: RatesStreamService = new RatesStreamService(oneFrameClient, ratesCache, config.oneFrame.refreshRate)
   private val ratesService: RatesService[F] = RatesServices.live[F](ratesCache, config.oneFrame.expiration)
