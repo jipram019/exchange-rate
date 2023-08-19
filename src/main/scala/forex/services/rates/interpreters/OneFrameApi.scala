@@ -34,14 +34,12 @@ class OneFrameApi(
       .send(httpRequest)
       .recoverWith {
         exception =>
-          println(exception)
           Future.failed(OneFrameConnectException(exception.getMessage))
       }
       .flatMap[List[Rate]] {
         httpResponse: Response[Either[ResponseException[String, Exception], List[Rate]]] =>
           httpResponse.body match {
             case Right(value) =>
-              println(httpResponse)
               Future.successful(value)
             case Left(_: ResponseException[String, Exception]) =>
               httpResponse.code match {

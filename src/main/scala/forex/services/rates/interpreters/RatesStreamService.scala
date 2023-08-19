@@ -1,8 +1,7 @@
 package forex.services.rates.interpreters
 
 import forex.domain.{Currency, Rate}
-import forex.services.rates.errors.Error
-import zio.stream.ZStream
+import zio.stream.{ZSink, ZStream}
 import zio.{Runtime, Schedule, Unsafe, ZIO, ZIOAppDefault}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,13 +19,16 @@ class RatesStreamService(api: OneFrameApi, cache: RatesCache, refreshRate: Long)
             api.getAllRates(allPairs)
               .flatMap {
                 rates: List[Rate] =>
-                  cache.putAll(rates)
+                  cache.putAll(rates).map{
+                    _ => Future.unit
+                  }
               }
               .recoverWith {
-                case exception: Error => Future.failed(exception)
+                case exception =>
+                  Future.failed(exception)
               }
           }
-          .runDrain
+          .run(ZSink.drain)
 
       Unsafe.unsafe {
         implicit unsafe => {
