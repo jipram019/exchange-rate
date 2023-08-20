@@ -1,12 +1,13 @@
 package forex.services.rates.interpreters
 
 import forex.config.OneFrameConfig
-import forex.domain.Rate
+import forex.domain.{Currency, Rate}
 import forex.services.rates.CustomDecoder.rateListDecoder
 import forex.services.rates.errors.Error.{OneFrameBadRequestException, OneFrameConnectException, OneFrameServerException, OneFrameUnknownException}
+import retry.Success
 import sttp.capabilities
 import sttp.client3.circe.asJson
-import sttp.client3.{Identity, RequestT, Response, ResponseException, SttpBackend, UriContext, basicRequest}
+import sttp.client3.{Identity, RequestT, ResponseException, SttpBackend, UriContext, basicRequest}
 import sttp.model.Uri
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,7 +17,6 @@ class OneFrameApi(
     config: OneFrameConfig,
     sttpBackendClient: SttpBackend[Future, capabilities.WebSockets]
 ) {
-
   def getAllRates(pairs: Seq[Rate.Pair]): Future[List[Rate]] = {
     val params: Seq[(String, String)] = pairs.map(
       (pair: Rate.Pair) => "pair" -> s"${pair.from}${pair.to}"
@@ -37,7 +37,7 @@ class OneFrameApi(
           Future.failed(OneFrameConnectException(exception.getMessage))
       }
       .flatMap[List[Rate]] {
-        httpResponse: Response[Either[ResponseException[String, Exception], List[Rate]]] =>
+        httpResponse =>
           httpResponse.body match {
             case Right(value) =>
               Future.successful(value)
@@ -53,6 +53,16 @@ class OneFrameApi(
           }
       }
   }
+
+  private val allPairs: List[Rate.Pair] = Currency.allPairs.map(Rate.Pair.tupled)
+  retry
+    .When {
+      case _ @ (_: OneFrameServerException | _: OneFrameBadRequestException) =>
+        retry.Directly(config.maxRetries.toInt)
+    }
+    .apply(
+      () => getAllRates(allPairs)
+    )(Success.always, global)
 }
 
 object OneFrameApi {

@@ -19,4 +19,5 @@ case class OneFrameConfig(
      expiration: Long,
      refreshRate: Long,
      cacheSize: Long,
+     maxRetries: Long
 )

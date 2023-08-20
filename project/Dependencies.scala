@@ -11,6 +11,7 @@ object Dependencies {
     val pureConfig          = "0.14.1"
     val sttp                = "3.8.13"
     val sttpCirce           = "3.0.0"
+    val retry               = "0.3.6"
     val caffeine            = "0.28.0"
     val enumeratum          = "1.6.0"
 
@@ -31,6 +32,7 @@ object Dependencies {
 
     lazy val sttp                = "com.softwaremill.sttp.client3" %% "zio"                % Versions.sttp
     lazy val sttpCirce           = "com.softwaremill.sttp.client3" %% "circe"              % Versions.sttpCirce
+    lazy val retry               = "com.softwaremill.retry"        %% "retry"              % Versions.retry
 
     lazy val enumeratum          = "com.beachape"                 %% "enumeratum"          % Versions.enumeratum
     lazy val enumeratumCirce     = "com.beachape"                 %% "enumeratum-circe"    % Versions.enumeratum

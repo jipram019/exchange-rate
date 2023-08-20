@@ -65,6 +65,7 @@ libraryDependencies ++= Seq(
   Libraries.pureConfig,
   Libraries.sttp,
   Libraries.sttpCirce,
+  Libraries.retry,
   Libraries.caffeine,
   Libraries.enumeratum,
   Libraries.enumeratumCirce,

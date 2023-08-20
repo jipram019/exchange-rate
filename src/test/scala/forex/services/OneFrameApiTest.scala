@@ -20,8 +20,8 @@ import scala.concurrent.duration.FiniteDuration
 class OneFrameApiTest extends AnyWordSpec with Matchers {
   val mockSttp: SttpBackendStub[Future, capabilities.WebSockets] = HttpClientFutureBackend.stub
   val config: OneFrameConfig = OneFrameConfig(
-    HttpConfig("localhost", 8080, FiniteDuration(2, "minutes")), "11dc303535874aeccc86a8251e6992f5",
-    300000, 10000, 1000
+    HttpConfig("localhost", 8080, FiniteDuration(2, "minutes")), "10dc303535874aeccc86a8251e6992f5",
+    300000, 10000, 1000, 10
   )
   val pairs: Seq[Rate.Pair] = Seq(Rate.Pair(Currency.USD, Currency.EUR), Rate.Pair(Currency.AUD, Currency.SGD))
 
@@ -79,6 +79,68 @@ class OneFrameApiTest extends AnyWordSpec with Matchers {
       val result: Future[List[Rate]] = new OneFrameApi(config, mockApi).getAllRates(pairs)
       ScalaFutures.whenReady(result) { resp =>
         resp shouldBe expected
+      }
+    }
+
+    "retry several times if one frame api fails" in {
+      val response1: String =
+        """
+          |{
+          |  "error": "Something bad happened"
+          |}
+          |""".stripMargin
+
+      val response2: String =
+        """
+          |[
+          |  {
+          |    "from": "USD",
+          |    "to": "EUR",
+          |    "bid": 0.8702743979669029,
+          |    "ask": 0.8129834411047454,
+          |    "price": 0.84162891953582415,
+          |    "time_stamp": "2020-07-04T17:56:12.907Z"
+          |  },
+          |  {
+          |    "from": "AUD",
+          |    "to": "SGD",
+          |    "bid": 0.5891192858066693,
+          |    "ask": 0.8346334453420459,
+          |    "price": 0.7118763655743576,
+          |    "time_stamp": "2020-07-04T17:56:12.907Z"
+          |  }
+          |]
+          |""".stripMargin
+
+
+      val mockApi: SttpBackendStub[Future, capabilities.WebSockets] =
+        mockSttp.whenRequestMatches(requestMatchers(pairs)).thenRespondCyclic(response1, response1, response2)
+
+      val expected = Seq(
+        Rate(
+          Rate.Pair(Currency.USD, Currency.EUR),
+          Price(BigDecimal("0.84162891953582415")),
+          Timestamp(OffsetDateTime.parse("2020-07-04T17:56:12.907Z"))
+        ),
+        Rate(
+          Rate.Pair(Currency.AUD, Currency.SGD),
+          Price(BigDecimal("0.7118763655743576")),
+          Timestamp(OffsetDateTime.parse("2020-07-04T17:56:12.907Z"))
+        )
+      )
+
+      val result1: Future[List[Rate]] = new OneFrameApi(config, mockApi).getAllRates(pairs)
+      val result2: Future[List[Rate]] = new OneFrameApi(config, mockApi).getAllRates(pairs)
+      val result3: Future[List[Rate]] = new OneFrameApi(config, mockApi).getAllRates(pairs)
+
+      ScalaFutures.whenReady(result1.failed) { e =>
+        e shouldBe a[OneFrameUnknownException]
+      }
+      ScalaFutures.whenReady(result2.failed) { e =>
+        e shouldBe a[OneFrameUnknownException]
+      }
+      ScalaFutures.whenReady(result3) { result =>
+        result shouldBe expected
       }
     }
 
