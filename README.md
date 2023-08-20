@@ -1,5 +1,5 @@
 # exchange-rate
-This exchange rate streaming service will pull the latest rates from OneFrame API every 10 seconds (configurable via refresh-rate param in application.conf).__
+This exchange rate streaming service will pull the latest rates from OneFrame API every 10 seconds (configurable via refresh-rate param in application.conf).  
 The basic working of the streaming service is implemented with ZIO Stream, of which, once the program starts, it will first call OneFrame API with all enumeration of currency pairs as QueryParams.
 Then it will schedule to call the API every {{refresh-rate}}. The latest rates for all currency pairs will be stored in Cache.
 
