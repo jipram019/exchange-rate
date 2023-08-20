@@ -14,5 +14,4 @@ object Converters {
         timestamp = rate.timestamp
       )
   }
-
 }

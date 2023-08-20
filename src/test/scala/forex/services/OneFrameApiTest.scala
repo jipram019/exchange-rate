@@ -112,7 +112,6 @@ class OneFrameApiTest extends AnyWordSpec with Matchers {
           |]
           |""".stripMargin
 
-
       val mockApi: SttpBackendStub[Future, capabilities.WebSockets] =
         mockSttp.whenRequestMatches(requestMatchers(pairs)).thenRespondCyclic(response1, response1, response2)
 

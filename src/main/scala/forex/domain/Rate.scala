@@ -6,10 +6,6 @@ case class Rate(
     timestamp: Timestamp
 )
 
-case class Rates(
-    rates: Seq[Rate]
-                )
-
 object Rate {
   final case class Pair(
       from: Currency,

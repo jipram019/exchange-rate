@@ -17,5 +17,4 @@ object Config {
     Stream.eval(Sync[F].delay(
       ConfigSource.default.at(path).loadOrThrow[ApplicationConfig]))
   }
-
 }

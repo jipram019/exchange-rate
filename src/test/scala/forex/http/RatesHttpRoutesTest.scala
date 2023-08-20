@@ -29,8 +29,7 @@ class RatesHttpRoutesTest extends AsyncWordSpecLike with Matchers {
     RProtocol.GetRatesRequest(Currency.SGD, Currency.AUD) -> Left(RateLookupFailed("Rate is missing!"))
   )
 
-  class MockedRatesProgram[F[_]](responses: Map[RProtocol.GetRatesRequest, Either[errors.Error, Rate]])
-      extends RatesProgram[F] {
+  class MockedRatesProgram[F[_]](responses: Map[RProtocol.GetRatesRequest, Either[errors.Error, Rate]]) extends RatesProgram[F] {
     override def get[T[_] : Async : ContextShift](request: RProtocol.GetRatesRequest): T[Either[errors.Error, Rate]] =
       Sync[T].delay(responses(request))
   }
@@ -85,12 +84,10 @@ class RatesHttpRoutesTest extends AsyncWordSpecLike with Matchers {
 
       ScalaFutures.whenReady(futureJson) {
         response =>
-          println(response)
           val expected: Json =
             json"""
                 "Rate is missing!"
             """
-          println(expected)
           expected shouldBe response
       }
     }

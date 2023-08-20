@@ -51,5 +51,4 @@ object Currency extends Enum[Currency] with CirceEnum[Currency]{
       .collect { case Seq(from: Currency, to: Currency) => (from, to) }
       .toList
   }
-
 }

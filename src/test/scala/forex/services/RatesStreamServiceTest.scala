@@ -22,7 +22,6 @@ class RatesStreamServiceTest extends AnyWordSpec with Matchers {
       Thread.sleep(11000)
       ScalaFutures.whenReady(modApp.app.module.ratesCache.getRate(rate.pair)){
         result =>
-          println(rate)
           rate.pair shouldBe result.get.pair
       }
     }
