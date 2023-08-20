@@ -204,5 +204,4 @@ class OneFrameApiTest extends AnyWordSpec with Matchers {
       }
     }
   }
-
 }
