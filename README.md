@@ -59,6 +59,7 @@ There is this interface to wrap F[_] into Future:
 ````
 Async.fromFuture {
    Async[F].delay {
+      ......
    }
 }
 ````
