@@ -88,7 +88,7 @@ Rates Service basically works as layer that expose its endpoint to external clie
 
 It will query the caching layer where it needs to fetch the latest rate for particulat rate.Pair. 
 
-Some possible exception that happen at this layer:  
+Some possible exception that might happen at this layer:  
 
 - Rate is missing from the cache due to initial cache loading from RatesStreamService, or due to some internal error from caffeine cache itself
 - Rate is staled, following the simple calculation logic :  
