@@ -21,7 +21,14 @@ The drawback:
 # Services Design  
 
 ## **Rates Streaming Service**    
-This exchange rate streaming service pulls the latest rates from OneFrame API every 10 seconds (configurable via `refresh-rate` param in application.conf)  
+This exchange rate streaming service pulls the latest rates from OneFrame API every 90 seconds (configurable via `refresh-rate` param in application.conf).  
+
+This number is based on the constraint that One Frame service only supports up to maximum 1000 requests per day for 1 API token.  
+
+This means, (1000 requests/24 ~ 40 requests/hour ~ 1 request/90 seconds)  
+
+Rate service is able to get fresh data at every 1.5 minutes interval, store it in cache and so external client can have fresh data within tolerable expiration, which is 5 minutes  
+
   
 The basic working of this service is following a stream implementation built on top of ZIO Stream, of which, once the program starts, it will first, call OneFrame API with all enumeration of currency pairs as QueryParams.  
 
@@ -31,7 +38,7 @@ Then it will schedule to call the API every `refresh-rate`.
 
 The latest rates for all currency pairs will be stored in Cache.  
 
-This design enabled fast initial loading of the cache without having to wait for the first 10 seconds to fetch the rates and store it inside cache.
+This design enabled fast initial loading of the cache without having to wait for the first 90 seconds to fetch the rates and store it inside cache.
 
 
 
@@ -43,9 +50,9 @@ https://github.com/ben-manes/caffeine
 
 The cache will store the map of Rate.Pair and Rate as KV pair by using Rate.Pair.toString as its key.  
 
-The ttl is set from expiration key param in the application.conf file. In the current configuration, the cache will expire after 5 minutes, and currently the cache capacity is set to 1000 entries which should be more than enough as the cache is getting refreshed every 10 seconds.  
+The ttl is set from expiration key param in the application.conf file. In the current configuration, the cache will expire after 5 minutes, and currently the cache capacity is set to 1000 entries which should be more than enough as the cache is getting refreshed every 90 seconds.  
 
-To better optimize it, the cache expiration could be set the same as refresh rate and or rates expiration itself (which is 5 minutes as per requirement). But as currently we cannot guarantee the reliability of OneFrame API, it is possible that the API call fails during fetching the latest rates. It is also possible that this error is not recovered soon enough (for example due to OneFrame API server itself getting down for long time). In either case, refresh rate might need to be set shorter enough than the refresh rate, so that when the api fails it will give enough time to recover within 5 minutes expiration.  
+To better optimize it, the cache expiration could be set the same as refresh rate. But as currently we cannot guarantee the reliability of OneFrame API, it is possible that the API call fails abruptly, and then this error is not recovered fast enough (for example due to OneFrame API server itself getting down for long time). In either case, client might be getting stale data (> 90 seconds), but if cache expiration set to 5 minutes, when the api fails, rate stream service can still have enough time to recover within 5 minutes expiration.  
 
 
 
