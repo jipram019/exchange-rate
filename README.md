@@ -2,7 +2,7 @@
 
 Build a local proxy for getting Currency Exchange Rates  
 
-## _Requirements_   
+## **Requirements**     
 Forex is a simple application that acts as a local proxy for getting exchange rates. It's a service that can be consumed by other internal services to get the exchange rate between a set of currencies, so they don't have to care about the specifics of third-party providers.
 
 The use case:
@@ -18,7 +18,7 @@ The drawback:
 
 
 
-# Overview of the Overall Services  
+# Services Design  
 
 ## **Rates Streaming Service**    
 This exchange rate streaming service will pull the latest rates from OneFrame API every 10 seconds (configurable via refresh-rate param in application.conf).  
@@ -95,7 +95,7 @@ Some possible exception that happen at this layer:
   `Rate timestamp + expiration < now` then the rate is expired
 
 
-## **Running and Testing**
+# **Running and Testing**
 To run the Main application, simply run:  
 
 `sbt run`
