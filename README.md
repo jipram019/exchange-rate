@@ -21,7 +21,7 @@ The drawback:
 # Services Design  
 
 ## **Rates Streaming Service**    
-This exchange rate streaming service pulls the latest rates from OneFrame API every 90 seconds (configurable via `refresh-rate` param in application.conf).  
+This rate streaming service pulls the latest rates from OneFrame API every 90 seconds (configurable via `refresh-rate` param in application.conf).  
 
 This number is based on the constraint that One Frame service only supports up to maximum 1000 requests per day for 1 API token.  
 
@@ -30,7 +30,9 @@ This means, (1000 requests/24 ~ 40 requests/hour ~ 1 request/90 seconds)
 Rate service is able to get fresh data at every 1.5 minutes interval, store it in cache and so external client can have fresh data within tolerable expiration, which is 5 minutes  
 
   
-The basic working of this service is following a stream implementation built on top of ZIO Stream, of which, once the program starts, it will first, call OneFrame API with all enumeration of currency pairs as QueryParams.  
+The basic working of this service is basically following a stream implementation built on top of ZIO Stream.  
+
+Once the program starts, it will first call OneFrame API with all enumeration of currency pairs as QueryParams.  
 
 (Ref: https://zio.dev/reference/stream/)
 
@@ -60,7 +62,7 @@ To better optimize it, the cache expiration could be set the same as refresh rat
 ## **OneFrame API Client**
 The OneFrame API client is implemented using `SttpBackendClient` with `HttpClientFutureBackend` instance.  
 
-There is no particular reason why I use Future backend client, merely because using it, it is less complex to implement from the my point of view. Also, the Future data type from Scala can interoperate well with Cats Effect IO, since there is this interface to wrap F[_] into a Future:  
+There is no particular reason why I use Future backend client, merely because using it, it is less complex to implement from my point of view. Also, the Scala Future data type can interoperate well with Cats Effect IO, since there is this interface to wrap F[_] into a Future:  
 ````
 Async.fromFuture {
    Async[F].delay {
@@ -69,7 +71,7 @@ Async.fromFuture {
 }
 ````
 
-Any non 200 HTTP responses from OneFrame are currently mapped onto the following exception list:  
+Any non 200 HTTP responses from OneFrame are currently mapped onto the following list of exceptions:  
 
 ````
 4xx --> OneFrameBadRequestException  
@@ -82,7 +84,7 @@ others --> OneFrameUnknownException
 The timeout will also be handled separately.  
 
 
-Currently it might not really useful to map OneFrame error responses following the different exception types, but in the future there might be several use cases in which we want to retry the API call only when getting some specific errors.  
+Currently, it might not really useful to map OneFrame errors following the different exception types, but in the future there might be several use cases in which we want to retry the API call only when getting some specific errors.  
 
 Or we might want to put several type of error response into Dead Letter Queue (DLQ) where we want to retry the call later (if necessary).  
 
@@ -92,7 +94,7 @@ Currently, the service implements Direct Retry 3 times if getting 4xx or 5xx res
 ## **Rates Service**  
 Rates Service basically works as a layer that exposes its endpoint to external client.  
 
-It will query the caching layer where it needs to fetch the latest rate for a particulat Rate.Pair 
+It will query the caching layer where it needs to fetch the latest rate for a particular Rate.Pair 
 
 Some possible exceptions that might happen during processing at this layer:  
 
@@ -110,7 +112,7 @@ and to run the Main application, simply run:
 
 In local machine, it will expose OneFrame API at http://localhost:8082  
 
-And test the endpoint using the following curl as an example:  
+and test the endpoint using the following curl as an example:  
 
 `curl -H "token: 10dc303535874aeccc86a8251e6992f5" 'localhost:8082/rates?from=USD&to=JPY'`  
 
