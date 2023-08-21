@@ -14,7 +14,7 @@ import sttp.client3.HttpClientFutureBackend
 class Module[F[_]: Concurrent: Timer: ContextShift](config: ApplicationConfig) {
   val oneFrameClient: OneFrameApi = OneFrameApi(config.oneFrame, HttpClientFutureBackend())
   val ratesCache: RatesCache = RatesCache(config.oneFrame.expiration, config.oneFrame.cacheSize)
-  val ratesStreamService: RatesStreamService = new RatesStreamService(oneFrameClient, ratesCache, config.oneFrame.refreshRate)
+  val ratesStreamService: RatesStreamService = RatesStreamService(oneFrameClient, ratesCache, config.oneFrame.refreshRate)
   val ratesService: RatesService[F] = RatesServices.live[F](ratesCache, config.oneFrame.expiration)
   val ratesProgram: RatesProgram[F] = RatesProgram[F](ratesService)
   val ratesHttpRoutes: HttpRoutes[F] = new RatesHttpRoutes[F](ratesProgram).routes

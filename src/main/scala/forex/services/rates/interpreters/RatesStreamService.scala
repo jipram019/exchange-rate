@@ -39,3 +39,9 @@ class RatesStreamService(api: OneFrameApi, cache: RatesCache, refreshRate: Long)
     }
   }
 }
+
+object RatesStreamService {
+  def apply(api: OneFrameApi, cache: RatesCache, refreshRate: Long): RatesStreamService ={
+    new RatesStreamService(api, cache, refreshRate)
+  }
+}
